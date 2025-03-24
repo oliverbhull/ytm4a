@@ -191,20 +191,27 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Function to download a file from a URL
-  async function downloadFile(url) {
+  async function downloadFile(url, folder) {
     try {
       // Create a link element
       const a = document.createElement('a');
       a.href = url;
       
       // Extract the filename from the URL
-      const filename = url.split('/').pop();
-      a.download = filename;
+      const filename = url.split('/').pop().split('?')[0]; // Remove query parameters
+      
+      // We can't directly specify the download location due to browser security,
+      // but we can suggest a path that would make the user's save dialog show a specific directory
+      const suggestedPath = `ytm4a/${folder}/${filename}`;
+      a.download = suggestedPath;
       
       // Append to body, click, and remove
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      
+      // Show a note to the user about where to save the file
+      showStatus(`Downloading to ${suggestedPath}. Please save to this location when prompted.`, 'info', 5000);
       
       return true;
     } catch (error) {
@@ -243,20 +250,22 @@ document.addEventListener('DOMContentLoaded', function() {
               url: item.url,
               category: item.folder,
               ticker_symbol: item.ticker_symbol,
-              custom_title: item.title // Send custom title to backend
-      };
+              custom_title: item.title,
+              download_only: true,  // Flag to indicate we only want download, no storage on Pi
+              mac_download: true     // Flag to indicate this is for Mac download
+            };
 
-      // Send request to local server
-      const response = await fetch('http://192.168.12.73:5555/process', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      });
+            // Send request to server - server will act as a coordinator only
+            const response = await fetch('http://192.168.12.73:5555/process', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data)
+            });
 
-      const result = await response.json();
-      
+            const result = await response.json();
+            
             if (result.status === 'success' || result.status === 'cancelled') {
               item.status = 'complete';
               item.completedAt = new Date().toISOString();
@@ -266,9 +275,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.audio_url = result.audio_url;
                 item.metadata_url = result.metadata_url;
                 
-                // Download the files automatically
-                await downloadFile(result.audio_url);
-                await downloadFile(result.metadata_url);
+                // Download the files to the correct directory
+                await downloadFile(result.audio_url, item.folder);
+                await downloadFile(result.metadata_url, item.folder);
               }
               
               processedCount++;
@@ -507,8 +516,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const metadataBtn = document.getElementById('download-metadata');
       
       if (audioBtn && metadataBtn) {
-        audioBtn.addEventListener('click', () => downloadFile(item.audio_url));
-        metadataBtn.addEventListener('click', () => downloadFile(item.metadata_url));
+        audioBtn.addEventListener('click', () => downloadFile(item.audio_url, item.folder));
+        metadataBtn.addEventListener('click', () => downloadFile(item.metadata_url, item.folder));
       }
     }, 100);
   }
@@ -583,10 +592,23 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Show status message
-  function showStatus(message, type) {
-    statusDiv.textContent = message;
+  function showStatus(message, type, duration = 0) {
+    // First, handle HTML content properly
+    if (message.includes('<')) {
+      statusDiv.innerHTML = message;
+    } else {
+      statusDiv.textContent = message;
+    }
+    
     statusDiv.className = `status ${type}`;
     statusDiv.style.display = 'block';
+    
+    // Auto-clear after duration (if specified)
+    if (duration > 0) {
+      setTimeout(() => {
+        statusDiv.style.display = 'none';
+      }, duration);
+    }
   }
 
   // Initial folder check

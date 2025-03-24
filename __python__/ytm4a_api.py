@@ -8,6 +8,7 @@ import re
 from dotenv import load_dotenv
 # from ml_pipeline import CategoryStrategy
 from pathlib import Path
+import tempfile
 
 # Load environment variables
 python_dir = Path(__file__).parent
@@ -54,20 +55,27 @@ class YTM4AProcessor:
         # Limit length
         return safe_title[:100]
 
-    def process_url(self, youtube_url, category, ticker_symbol=None, custom_title=None):
+    def process_url(self, youtube_url, category, ticker_symbol=None, custom_title=None, save_to_pi=True):
         """Process YouTube URL and download/compress audio"""
         try:
             # Validate URL and extract video ID
             video_id = self.extract_video_id(youtube_url)
             print(f"✅ Valid YouTube URL: {video_id}")
 
-            # Create category directory if it doesn't exist
-            category_path = self.base_dir / category
-            category_path.mkdir(exist_ok=True)
+            if save_to_pi:
+                # Create category directory if it doesn't exist
+                category_path = self.base_dir / category
+                category_path.mkdir(exist_ok=True)
 
-            # Change to category directory
-            os.chdir(str(category_path))
-            print(f"📂 Working in: {category_path}")
+                # Change to category directory
+                os.chdir(str(category_path))
+                print(f"📂 Working in: {category_path}")
+            else:
+                # Use temporary directory for processing
+                temp_dir = tempfile.mkdtemp()
+                category_path = Path(temp_dir)
+                os.chdir(temp_dir)
+                print(f"📂 Working in temporary directory: {temp_dir}")
 
             # Download video and metadata
             print("⬇️ Downloading video...")
@@ -123,13 +131,27 @@ class YTM4AProcessor:
             original_file.unlink()
             print("✅ Audio processing complete")
 
-            # Return success without running ML pipeline
-            return {
+            # Store temp file paths if not saving to Pi
+            temp_file_paths = {}
+            if not save_to_pi:
+                temp_file_paths = {
+                    "audio_path": str(audio_file),
+                    "metadata_path": str(metadata_file)
+                }
+
+            # Return success
+            result = {
                 "status": "success",
                 "message": "Audio processing complete",
                 "filename": final_filename,
                 "category": category
             }
+            
+            # Add temp file paths if needed
+            if not save_to_pi:
+                result["temp_files"] = temp_file_paths
+                
+            return result
 
         except subprocess.CalledProcessError as e:
             error_msg = f"Command failed: {e.cmd}\nOutput: {e.output}"
