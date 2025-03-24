@@ -20,8 +20,7 @@ CORS(app)  # Enable CORS for all routes
 
 # Initialize processor with API key
 processor = YTM4AProcessor()
-if not processor.assemblyai_api_key:
-    logging.warning("⚠️ AssemblyAI API key not found. Set ASSEMBLYAI_API_KEY in .env file")
+# No need to warn about API key since we're only downloading and compressing
 
 @app.route('/process', methods=['POST'])
 def process_video():
@@ -47,12 +46,6 @@ def process_video():
                 "message": "Ticker symbol is required for Economics category"
             }), 400
 
-        if not processor.assemblyai_api_key:
-            return jsonify({
-                "status": "error",
-                "message": "AssemblyAI API key not configured"
-            }), 500
-
         # Process the video
         result = processor.process_url(youtube_url, category, ticker_symbol, custom_title)
         
@@ -72,21 +65,15 @@ def process_video():
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint that also verifies API key configuration"""
+    """Health check endpoint"""
     health_status = {
         "status": "healthy",
-        "api_keys": {
-            "assemblyai": bool(processor.assemblyai_api_key)
-        }
+        "download_only_mode": True
     }
     return jsonify(health_status), 200
 
 if __name__ == '__main__':
-    # Check if API keys are configured
-    if not processor.assemblyai_api_key:
-        print("\n⚠️  WARNING: AssemblyAI API key not found")
-        print("Set ASSEMBLYAI_API_KEY in your .env file\n")
-    
+    # Start server
     print("\n🚀 Starting YTM4A server...")
     print("📝 API Documentation:")
     print("  POST /process")

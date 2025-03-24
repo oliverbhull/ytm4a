@@ -19,10 +19,8 @@ class YTM4AProcessor:
         self.venv_path = self.base_dir / "venv"
         self.python_dir = python_dir
         
-        # Initialize ML pipeline with AssemblyAI API key
-        self.assemblyai_api_key = os.getenv('ASSEMBLYAI_API_KEY')
-        if not self.assemblyai_api_key:
-            print("⚠️ Warning: ASSEMBLYAI_API_KEY not found in environment variables")
+        # Set AssemblyAI API key to a dummy value since we're not using it
+        self.assemblyai_api_key = "dummy_key_not_used"
 
     def activate_venv(self):
         """Ensure we're running in the virtual environment"""
