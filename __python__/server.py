@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import json
 from datetime import datetime
+import urllib.parse
 
 # Load environment variables from the __python__ directory
 python_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +21,9 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+
+# Dictionary to keep track of temporary files
+temp_file_registry = {}
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -85,10 +89,24 @@ def process_video():
                 metadata_path = temp_files.get("metadata_path", "")
                 
                 if audio_path and os.path.exists(audio_path):
-                    result["audio_url"] = f"{base_url}/download/temp/{os.path.basename(audio_path)}?temp_file_path={audio_path}"
+                    # Generate a unique key for the temporary file
+                    audio_key = f"audio_{datetime.now().timestamp()}"
+                    # Store the full path in the registry
+                    temp_file_registry[audio_key] = audio_path
+                    # Create a URL with the key
+                    audio_filename = os.path.basename(audio_path)
+                    result["audio_url"] = f"{base_url}/download/temp/{audio_filename}?key={audio_key}"
                     
                 if metadata_path and os.path.exists(metadata_path):
-                    result["metadata_url"] = f"{base_url}/download/temp/{os.path.basename(metadata_path)}?temp_file_path={metadata_path}"
+                    # Generate a unique key for the temporary file
+                    metadata_key = f"metadata_{datetime.now().timestamp()}"
+                    # Store the full path in the registry
+                    temp_file_registry[metadata_key] = metadata_path
+                    # Create a URL with the key
+                    metadata_filename = os.path.basename(metadata_path)
+                    result["metadata_url"] = f"{base_url}/download/temp/{metadata_filename}?key={metadata_key}"
+                
+                logging.info(f"Temporary files registered: {temp_file_registry}")
         
         return jsonify(result)
 
@@ -99,126 +117,47 @@ def process_video():
             "message": str(e)
         }), 500
 
-def process_for_mac_download(youtube_url, category, custom_title=None):
-    """Process YouTube URL for direct Mac download without saving on the Pi"""
+@app.route('/download/temp/<path:filename>', methods=['GET'])
+def download_temp_file(filename):
+    """Download temporary files using the registry key"""
     try:
-        # Create temp directory
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            os.chdir(temp_path)
-            
-            # Extract video ID
-            from urllib.parse import urlparse, parse_qs
-            parsed_url = urlparse(youtube_url)
-            video_id = None
-            
-            if parsed_url.hostname in ('www.youtube.com', 'youtube.com'):
-                if parsed_url.path == '/watch':
-                    video_id = parse_qs(parsed_url.query)['v'][0]
-            elif parsed_url.hostname == 'youtu.be':
-                video_id = parsed_url.path[1:]
-                
-            if not video_id:
-                raise ValueError("Invalid YouTube URL")
-            
-            # Download video and metadata
-            logging.info(f"Downloading video: {youtube_url}")
-            result = subprocess.run([
-                "yt-dlp",
-                "--geo-bypass",
-                "-x",
-                "--audio-format", "m4a",
-                "-o", "og_%(title)s.%(ext)s",
-                "--print-json",
-                youtube_url
-            ], capture_output=True, text=True, check=True)
-            
-            # Parse metadata
-            metadata = json.loads(result.stdout)
-            
-            # Process title
-            def sanitize_filename(title):
-                """Convert title to safe filename"""
-                import re
-                # Remove invalid characters
-                safe_title = re.sub(r'[<>:"/\\|?*\']', '_', title)
-                # Replace spaces with underscores
-                safe_title = safe_title.replace(' ', '_')
-                # Remove multiple underscores
-                safe_title = re.sub(r'_+', '_', safe_title)
-                # Remove leading/trailing underscores
-                safe_title = safe_title.strip('_')
-                # Limit length
-                return safe_title[:100]
-            
-            # Use custom title if provided, otherwise use YouTube title
-            if custom_title:
-                video_title = sanitize_filename(custom_title)
-            else:
-                video_title = sanitize_filename(metadata['title'])
-                
-            # Use YYMMDD date format
-            date_prefix = datetime.now().strftime('%y%m%d')
-            final_filename = f"{date_prefix}_{video_title}"
-            
-            # Find downloaded file
-            original_file = list(temp_path.glob('og_*.m4a'))[0]
-            if not original_file.exists():
-                raise FileNotFoundError("Could not find downloaded audio file")
-            
-            # Save metadata
-            metadata_file = temp_path / f"{final_filename}.json"
-            with open(metadata_file, 'w') as f:
-                json.dump(metadata, f, indent=4)
-            
-            # Compress audio
-            audio_file = temp_path / f"{final_filename}.m4a"
-            subprocess.run([
-                "ffmpeg",
-                "-i", str(original_file),
-                "-b:a", "64k",
-                str(audio_file)
-            ], check=True)
-            
-            # Store files in memory
-            temp_files = {
-                "audio": str(audio_file),
-                "metadata": str(metadata_file)
-            }
-            
-            # Return success info
-            return {
-                "status": "success",
-                "message": "Audio processing complete, ready for Mac download",
-                "filename": final_filename,
-                "category": category,
-                "temp_files": temp_files
-            }
-            
-    except subprocess.CalledProcessError as e:
-        error_msg = f"Command failed: {e.cmd}\nOutput: {e.output}"
-        logging.error(error_msg)
-        return {"status": "error", "message": error_msg}
+        # Get the key from the query parameters
+        key = request.args.get('key', '')
+        
+        logging.info(f"Download request for: {filename} with key: {key}")
+        logging.info(f"Current temp registry: {temp_file_registry}")
+        
+        if not key or key not in temp_file_registry:
+            return jsonify({"status": "error", "message": "Invalid or expired download key"}), 404
+        
+        # Get the full path from the registry
+        full_path = temp_file_registry[key]
+        
+        if not os.path.exists(full_path):
+            logging.error(f"File not found at path: {full_path}")
+            return jsonify({"status": "error", "message": "Temporary file not found"}), 404
+        
+        # Ensure the requested filename matches the stored filename
+        if os.path.basename(full_path) != filename:
+            logging.error(f"Filename mismatch: requested {filename}, stored {os.path.basename(full_path)}")
+            return jsonify({"status": "error", "message": "Filename mismatch"}), 404
+        
+        dir_path = os.path.dirname(full_path)
+        
+        logging.info(f"Serving file from: {dir_path}, filename: {filename}")
+        return send_from_directory(dir_path, filename, as_attachment=True)
+    
     except Exception as e:
-        error_msg = str(e)
-        logging.error(f"Error in process_for_mac_download: {error_msg}")
-        return {"status": "error", "message": error_msg}
+        logging.error(f"Download temp error: {str(e)}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "message": f"Error downloading file: {str(e)}"
+        }), 500
 
 @app.route('/download/<category>/<filename>', methods=['GET'])
 def download_file(category, filename):
-    """Serve files for download"""
+    """Serve regular files for download"""
     try:
-        # Check if this is a temp file from process_for_mac_download
-        if 'temp_file_path' in request.args:
-            temp_file_path = request.args.get('temp_file_path')
-            if os.path.exists(temp_file_path):
-                return send_from_directory(os.path.dirname(temp_file_path), 
-                                         os.path.basename(temp_file_path), 
-                                         as_attachment=True)
-            else:
-                return jsonify({"status": "error", "message": "Temporary file not found"}), 404
-        
-        # Regular file from Pi storage
         base_dir = Path(python_dir).parent
         category_dir = base_dir / category
         return send_from_directory(category_dir, filename, as_attachment=True)
@@ -234,7 +173,8 @@ def health_check():
     """Health check endpoint"""
     health_status = {
         "status": "healthy",
-        "download_only_mode": True
+        "download_only_mode": True,
+        "temp_files": len(temp_file_registry)
     }
     return jsonify(health_status), 200
 
@@ -248,6 +188,8 @@ if __name__ == '__main__':
     print("    - ticker_symbol: Required for Finance category")
     print("\n  GET /download/<category>/<filename>")
     print("    - Download processed files")
+    print("\n  GET /download/temp/<filename>?key=<key>")
+    print("    - Download temporary files")
     print("\n  GET /health")
     print("    - Server health check")
     print("\n🔗 Server running at http://localhost:5555\n")
