@@ -64,7 +64,7 @@ def process_video():
         return jsonify(result)
 
     except Exception as e:
-        logging.error(f"Error processing request: {str(e)}")
+        logging.error(f"Error processing request: {str(e)}", exc_info=True)
         return jsonify({
             "status": "error",
             "message": str(e)
