@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
       };
 
       // Send request to local server
-      const response = await fetch('http://192.168.X.X:5555/process', {
+      const response = await fetch('http://192.168.12.73:5555/process', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

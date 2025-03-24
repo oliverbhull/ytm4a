@@ -34,7 +34,7 @@ YTM4A processes YouTube videos in different categories (Finance, AI, Geopolitics
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/ytm4a.git
+   git clone https://github.com/oliverbhull/ytm4a.git
    cd ytm4a
    ```
 
@@ -60,6 +60,45 @@ YTM4A processes YouTube videos in different categories (Finance, AI, Geopolitics
 5. Install system dependencies:
    - ffmpeg (for audio processing)
    - yt-dlp (for video downloading)
+
+## Raspberry Pi Deployment
+
+1. Install required system packages:
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y python3-pip git ffmpeg
+   ```
+
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/oliverbhull/ytm4a.git
+   cd ytm4a
+   ```
+
+3. Install Python dependencies:
+   ```bash
+   pip3 install -r __python__/requirements.txt
+   ```
+
+4. Create .env file in the __python__ directory:
+   ```bash
+   cd __python__
+   nano .env
+   ```
+   Add your AssemblyAI API key:
+   ```
+   ASSEMBLYAI_API_KEY=your_key_here
+   ```
+
+5. Run the server:
+   ```bash
+   python3 server.py
+   ```
+
+6. Access the server from other devices using:
+   ```
+   http://192.168.12.73:5555
+   ```
 
 ## Usage
 
