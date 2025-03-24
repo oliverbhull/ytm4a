@@ -190,6 +190,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
+  // Function to download a file from a URL
+  async function downloadFile(url) {
+    try {
+      // Create a link element
+      const a = document.createElement('a');
+      a.href = url;
+      
+      // Extract the filename from the URL
+      const filename = url.split('/').pop();
+      a.download = filename;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      return true;
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      return false;
+    }
+  }
+
   // Process Queue button click handler
   processQueueButton.addEventListener('click', async function() {
     if (videoQueue.length === 0) {
@@ -237,6 +260,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.status === 'success' || result.status === 'cancelled') {
               item.status = 'complete';
               item.completedAt = new Date().toISOString();
+              
+              // Store download URLs if available
+              if (result.audio_url) {
+                item.audio_url = result.audio_url;
+                item.metadata_url = result.metadata_url;
+                
+                // Download the files automatically
+                await downloadFile(result.audio_url);
+                await downloadFile(result.metadata_url);
+              }
+              
               processedCount++;
             } else {
               throw new Error(result.message || 'Processing failed');
@@ -458,7 +492,25 @@ document.addEventListener('DOMContentLoaded', function() {
       details.push(`<strong>Error:</strong> ${item.error}`);
     }
     
-    showStatus(details.join('<br>'), item.status === 'failed' ? 'error' : 'success');
+    if (item.audio_url) {
+      details.push(`<div class="download-links">
+        <button class="download-btn" id="download-audio">Download Audio</button>
+        <button class="download-btn" id="download-metadata">Download Metadata</button>
+      </div>`);
+    }
+    
+    showStatus(details.join('<br>'), 'info', 0);
+    
+    // Add event listeners for download buttons if they exist
+    setTimeout(() => {
+      const audioBtn = document.getElementById('download-audio');
+      const metadataBtn = document.getElementById('download-metadata');
+      
+      if (audioBtn && metadataBtn) {
+        audioBtn.addEventListener('click', () => downloadFile(item.audio_url));
+        metadataBtn.addEventListener('click', () => downloadFile(item.metadata_url));
+      }
+    }, 100);
   }
 
   // Remove an item from the queue

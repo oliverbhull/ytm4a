@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory, url_for
 from flask_cors import CORS
 from ytm4a_api import YTM4AProcessor
 import logging
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
 # Load environment variables from the __python__ directory
 python_dir = os.path.dirname(os.path.abspath(__file__))
@@ -54,6 +55,20 @@ def process_video():
         elif result["status"] == "cancelled":
             return jsonify(result), 200
             
+        # Add download URLs to the result
+        if "filename" in result:
+            base_url = request.host_url.rstrip('/')
+            filename = result["filename"]
+            category_path = result["category"]
+            
+            # Add audio file URL
+            audio_file = f"{filename}.m4a"
+            result["audio_url"] = f"{base_url}/download/{category_path}/{audio_file}"
+            
+            # Add metadata file URL
+            metadata_file = f"{filename}.json"
+            result["metadata_url"] = f"{base_url}/download/{category_path}/{metadata_file}"
+        
         return jsonify(result)
 
     except Exception as e:
@@ -62,6 +77,20 @@ def process_video():
             "status": "error",
             "message": str(e)
         }), 500
+
+@app.route('/download/<category>/<filename>', methods=['GET'])
+def download_file(category, filename):
+    """Download processed files"""
+    try:
+        base_dir = Path(python_dir).parent
+        category_dir = base_dir / category
+        return send_from_directory(category_dir, filename, as_attachment=True)
+    except Exception as e:
+        logging.error(f"Download error: {str(e)}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "message": f"File not found: {filename}"
+        }), 404
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -80,6 +109,8 @@ if __name__ == '__main__':
     print("    - url: YouTube video URL")
     print("    - category: 'Finance', 'AI', or 'Geopolitics'")
     print("    - ticker_symbol: Required for Finance category")
+    print("\n  GET /download/<category>/<filename>")
+    print("    - Download processed files")
     print("\n  GET /health")
     print("    - Server health check")
     print("\n🔗 Server running at http://localhost:5555\n")
