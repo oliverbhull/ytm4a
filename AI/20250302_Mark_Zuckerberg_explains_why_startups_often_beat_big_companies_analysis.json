@@ -1,0 +1,68 @@
+{
+    "processed_data": {
+        "transcript": "There may be some larger company that has some distribution advantage, but like, I don't know, large companies are slow and they lack conviction. One of the kind of things that I've thought about from time to time is like, why was it the case that we were able to build Facebook and that some other company didn't? Right? It wasn't like it was a super novel idea, right? It's, I mean there was Friendster before there was MySpace, there's all this stuff. Google, Microsoft, Yahoo, they all like had versions of it. Why didn't they do it? It's not that they had a lack of talent, right? I mean we were like a ragtag group of children, right? It's like, and they had like all these like serious, you know, engineers and like serious infrastructure. And so I kind of think the reason is because people doubt new ideas before they come to fruition, right? So the narrative with social networking is like just like this college kid thing. It's like, okay, fine, maybe not college kids, but it's probably a fad. Oh, okay, maybe it seems like it's gonna be around for a while, but it's probably not gonna make money. Oh, it's making money, but the switch to mobile is gonna be pretty hard. And then it's like, okay. By the time we figured that out, it was too late for anyone. The companies had lost their advantage. And so what was the issue? I don't know. There's like, there's probably some team buried deep inside those companies that believed in it and probably some like VP person who is like, eh, that's probably not the biggest priority and just like, you know, pour some, I don't know, sand in the gears or whatever your analogy you want, Even for the things that look like they belong to large companies as opportunities because they have a big distribution advantage, I would guess that big companies are going to fumble two thirds of those, right? And then there are all these things where there is not an apparent big advantage because it plugs into an existing distribution channel and those are just kind of free.",
+        "cleaned_transcript": "may larger company distribution advantage , like , n't know , large companies slow lack conviction . one kind things 've thought time time like , case able build facebook company n't ? right ? n't like super novel idea , right ? 's , mean friendster myspace , 's stuff . google , microsoft , yahoo , like versions . n't ? 's lack talent , right ? mean like ragtag group children , right ? 's like , like like serious , know , engineers like serious infrastructure . kind think reason people doubt new ideas come fruition , right ? narrative social networking like like college kid thing . 's like , okay , fine , maybe college kids , 's probably fad . oh , okay , maybe seems like 's gon na around , 's probably gon na make money . oh , 's making money , switch mobile gon na pretty hard . 's like , okay . time figured , late anyone . companies lost advantage . issue ? n't know . 's like , 's probably team buried deep inside companies believed probably like vp person like , eh , 's probably biggest priority like , know , pour , n't know , sand gears whatever analogy want , even things look like belong large companies opportunities big distribution advantage , would guess big companies going fumble two thirds , right ? things apparent big advantage plugs existing distribution channel kind free .",
+        "entities": {
+            "ORG": [
+                "google",
+                "microsoft",
+                "yahoo"
+            ],
+            "PERSON": [
+                "friendster myspace"
+            ],
+            "GPE": [],
+            "MONEY": [],
+            "PERCENT": []
+        },
+        "sentiment": {
+            "textblob": {
+                "polarity": 0.15821237585943468,
+                "subjectivity": 0.534832569391393
+            },
+            "huggingface": {
+                "label": "NEGATIVE",
+                "score": 0.9990100860595703,
+                "chunk_count": 1
+            }
+        },
+        "speakers": [
+            {
+                "speaker": "A",
+                "text": "There may be some larger company that has some distribution advantage, but like, I don't know, large companies are slow and they lack conviction. One of the kind of things that I've thought about from time to time is like, why was it the case that we were able to build Facebook and that some other company didn't? Right? It wasn't like it was a super novel idea, right? It's, I mean there was Friendster before there was MySpace, there's all this stuff. Google, Microsoft, Yahoo, they all like had versions of it. Why didn't they do it? It's not that they had a lack of talent, right? I mean we were like a ragtag group of children, right? It's like, and they had like all these like serious, you know, engineers and like serious infrastructure. And so I kind of think the reason is because people doubt new ideas before they come to fruition, right? So the narrative with social networking is like just like this college kid thing. It's like, okay, fine, maybe not college kids, but it's probably a fad. Oh, okay, maybe it seems like it's gonna be around for a while, but it's probably not gonna make money. Oh, it's making money, but the switch to mobile is gonna be pretty hard. And then it's like, okay. By the time we figured that out, it was too late for anyone. The companies had lost their advantage. And so what was the issue? I don't know. There's like, there's probably some team buried deep inside those companies that believed in it and probably some like VP person who is like, eh, that's probably not the biggest priority and just like, you know, pour some, I don't know, sand in the gears or whatever your analogy you want, Even for the things that look like they belong to large companies as opportunities because they have a big distribution advantage, I would guess that big companies are going to fumble two thirds of those, right? And then there are all these things where there is not an apparent big advantage because it plugs into an existing distribution channel and those are just kind of free.",
+                "start": 80,
+                "end": 97760
+            }
+        ],
+        "chapters": [
+            {
+                "headline": "Why did Facebook succeed where other companies failed with social networking",
+                "summary": "There may be some larger company that has some distribution advantage, but large companies are slow and they lack conviction. The reason is because people doubt new ideas before they come to fruition. Even for the things that look like they belong to large companies as opportunities, big companies are going to fumble two thirds of those.",
+                "start": 80,
+                "end": 97760
+            }
+        ],
+        "category": "AI",
+        "processed_date": "2025-03-02T00:26:22.918161"
+    },
+    "features": {
+        "sentiment_polarity": 0.15821237585943468,
+        "sentiment_subjectivity": 0.534832569391393,
+        "hf_sentiment_label": "NEGATIVE",
+        "hf_sentiment_score": 0.9990100860595703,
+        "person_mentions": 1,
+        "org_mentions": 3,
+        "location_mentions": 0,
+        "money_mentions": 0,
+        "rsi": null,
+        "macd": null,
+        "volatility": null,
+        "category": "AI"
+    },
+    "signal": {
+        "direction": "NEUTRAL",
+        "confidence": 0.0,
+        "horizon": "MEDIUM_TERM",
+        "reasoning": []
+    }
+}

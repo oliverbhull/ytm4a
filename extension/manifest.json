@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "YTM4A Processor",
+  "version": "1.0",
+  "description": "Process YouTube videos with YTM4A",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://localhost:5555/*",
+    "http://192.168.*.*:5555/*",
+    "https://*.youtube.com/*",
+    "https://noembed.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+} 

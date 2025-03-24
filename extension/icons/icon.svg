@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Database cylinders -->
+  <g fill="#4285f4">
+    <!-- Top cylinder -->
+    <ellipse cx="64" cy="32" rx="48" ry="16" />
+    <rect x="16" y="32" width="96" height="24" />
+    <ellipse cx="64" cy="56" rx="48" ry="16" />
+    
+    <!-- Middle cylinder -->
+    <rect x="16" y="56" width="96" height="24" />
+    <ellipse cx="64" cy="80" rx="48" ry="16" />
+    
+    <!-- Bottom cylinder -->
+    <rect x="16" y="80" width="96" height="24" />
+    <ellipse cx="64" cy="104" rx="48" ry="16" />
+  </g>
+  
+  <!-- Highlights -->
+  <g fill="#ffffff" fill-opacity="0.3">
+    <path d="M64 16 Q80 16 96 24 Q80 32 64 32 Q48 32 32 24 Q48 16 64 16" />
+    <path d="M64 40 Q80 40 96 48 Q80 56 64 56 Q48 56 32 48 Q48 40 64 40" />
+    <path d="M64 64 Q80 64 96 72 Q80 80 64 80 Q48 80 32 72 Q48 64 64 64" />
+  </g>
+</svg> 

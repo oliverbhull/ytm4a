@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YTM4A Processor</title>
+  <style>
+    body {
+      width: 350px;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    select, input {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+    }
+    button {
+      padding: 8px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #357abd;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 4px;
+      display: none;
+      font-size: 13px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .loading {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+    .queue-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 4px;
+      background-color: #f8f9fa;
+    }
+    .queue-item .status-badge {
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: center;
+    }
+    .queue-item .pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .queue-item .processing {
+      background-color: #cce5ff;
+      color: #004085;
+      animation: pulse 1.5s infinite;
+    }
+    .queue-item .complete {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .queue-item .failed {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+    .queue-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .queue-list {
+      max-height: 180px;
+      overflow-y: auto;
+      margin-top: 6px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+      padding: 6px;
+      background-color: white;
+    }
+    h2 {
+      margin: 0 0 6px 0;
+      font-size: 18px;
+    }
+    h3 {
+      margin: 10px 0 2px 0;
+      font-size: 15px;
+    }
+    label {
+      margin-bottom: 2px;
+      display: block;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .refresh-btn {
+      background-color: transparent;
+      color: #4285f4;
+      border: none;
+      padding: 2px 6px;
+      cursor: pointer;
+      font-size: 12px;
+      width: auto;
+    }
+    .refresh-btn:hover {
+      background-color: #f0f0f0;
+    }
+    .small-button {
+      padding: 2px 4px;
+      font-size: 11px;
+      min-width: 20px;
+    }
+    .queue-button-row {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .clear-btn {
+      background-color: #dc3545;
+      flex: 1;
+    }
+    .clear-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>YTM4A Processor</h2>
+    
+    <input type="text" id="title" placeholder="Enter video title...">
+    
+    <select id="folder" aria-label="Select folder">
+      <option value="AI">AI</option>
+      <option value="Economics">Economics</option>
+      <option value="Geopolitics">Geopolitics</option>
+      <option value="Davos">Davos</option>
+    </select>
+
+    <div id="tickerContainer">
+      <label for="ticker">Ticker Symbol (for Economics only):</label>
+      <input type="text" id="ticker" placeholder="e.g., AAPL">
+    </div>
+
+    <button id="addToQueue">Add To Queue</button>
+    
+    <div class="toolbar">
+      <h3>Processing Queue</h3>
+      <button id="refreshQueue" class="refresh-btn" title="Refresh Queue">↻ Refresh</button>
+    </div>
+    <div id="queueList" class="queue-list">
+      <!-- Queue items will be added here -->
+    </div>
+    
+    <div class="queue-button-row">
+      <button id="processQueue">Process Queue</button>
+      <button id="clearQueue" class="clear-btn">Clear All</button>
+    </div>
+    
+    <div id="status" class="status"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 
