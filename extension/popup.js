@@ -275,9 +275,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.audio_url = result.audio_url;
                 item.metadata_url = result.metadata_url;
                 
-                // Download the files to the correct directory
-                await downloadFile(result.audio_url, item.folder);
-                await downloadFile(result.metadata_url, item.folder);
+                try {
+                  // Attempt automatic download
+                  await downloadFile(result.audio_url, item.folder);
+                  await downloadFile(result.metadata_url, item.folder);
+                } catch (downloadError) {
+                  console.error('Auto-download error:', downloadError);
+                  // Continue execution - we'll show manual download buttons
+                }
+                
+                // Always show the item details with download buttons
+                setTimeout(() => {
+                  showItemDetails(item);
+                  showStatus(`Files ready for download! Click the download buttons if they didn't download automatically.`, 'success', 0);
+                }, 1000);
               }
               
               processedCount++;
@@ -502,9 +513,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (item.audio_url) {
-      details.push(`<div class="download-links">
-        <button class="download-btn" id="download-audio">Download Audio</button>
-        <button class="download-btn" id="download-metadata">Download Metadata</button>
+      details.push(`<div class="download-section">
+        <h3>Download Files</h3>
+        <p>If files didn't download automatically, use these buttons:</p>
+        <div class="download-links">
+          <button class="download-btn" id="download-audio">Download Audio</button>
+          <button class="download-btn" id="download-metadata">Download JSON</button>
+        </div>
+        <p class="download-tip">Save to your <code>ytm4a/${item.folder}</code> folder when prompted.</p>
       </div>`);
     }
     
@@ -516,8 +532,15 @@ document.addEventListener('DOMContentLoaded', function() {
       const metadataBtn = document.getElementById('download-metadata');
       
       if (audioBtn && metadataBtn) {
-        audioBtn.addEventListener('click', () => downloadFile(item.audio_url, item.folder));
-        metadataBtn.addEventListener('click', () => downloadFile(item.metadata_url, item.folder));
+        audioBtn.addEventListener('click', () => {
+          downloadFile(item.audio_url, item.folder);
+          showStatus('Download initiated. Please save to the suggested location.', 'success', 3000);
+        });
+        
+        metadataBtn.addEventListener('click', () => {
+          downloadFile(item.metadata_url, item.folder);
+          showStatus('Download initiated. Please save to the suggested location.', 'success', 3000);
+        });
       }
     }, 100);
   }
